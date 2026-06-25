@@ -113,7 +113,7 @@ body {
 #reel-window { 
     flex: 1; 
     max-width: 1200px;
-    height: 260px; /* Expanded window space for dual lines */
+    height: 260px; 
     overflow: hidden; 
     position: relative; 
 }
@@ -134,9 +134,10 @@ body {
     /* UNIFORM STATIC FONT SIZE */
     font-size: 55px;
     
-    /* ALLOW WRAPPING AND CONTINUATION BELOW */
+    /* SMART WHOLE-WORD WRAPPING DIRECTLY BELOW */
     white-space: normal;
-    word-break: break-all;
+    word-break: keep-all;
+    overflow-wrap: break-word;
     line-height: 1.1;
     padding: 0 15px;
 }
@@ -634,7 +635,7 @@ function spin() {
   const target = activePool[winnerIndex];
   
   const { totalItems } = buildReel(target);
-  const totalScroll = totalItems * 260; // Linked to updated 260px container step sizing
+  const totalScroll = totalItems * 260; 
   const start = performance.now();
 
   function anim(now) {
