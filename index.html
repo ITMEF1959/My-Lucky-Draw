@@ -101,18 +101,18 @@ body {
 }
 #winner-header.show { opacity: 1; }
 
-/* THE REEL SYSTEM (Now using Flex to keep text strictly sandwiched between arrows) */
+/* THE REEL SYSTEM (Cleanly sandwiched, no overlapping) */
 #reel-frame { 
     width: 100%; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    padding: 0 40px;
+    padding: 0 20px;
     position: relative; 
 }
 #reel-window { 
     flex: 1; 
-    max-width: 1100px; /* Keeps text layout centralized and structured */
+    max-width: 1200px;
     height: 220px; 
     overflow: hidden; 
     position: relative; 
@@ -131,17 +131,14 @@ body {
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* Fluid baseline text sizing engine */
-    font-size: clamp(36px, 4.5vw, 60px);
+    /* MAINTAINED BIG FONT SIZE: Standardized globally across all variations */
+    font-size: 55px;
     white-space: nowrap;
-}
-
-/* Dynamic protective scale settings based on string lengths */
-.reel-item.long-name {
-    font-size: clamp(26px, 3.5vw, 38px);
-}
-.reel-item.longest-name {
-    font-size: clamp(18px, 2.5vw, 26px);
+    
+    /* Prevents spilling past the boundaries */
+    overflow: hidden; 
+    text-overflow: clip; 
+    padding: 0 10px;
 }
 
 .winner-glow {
@@ -159,13 +156,13 @@ body {
     }
 }
 
-/* ARROWS (Natively flanking the window container so overlapping is physically impossible) */
+/* ARROWS (Natively flanking the margins perfectly) */
 #arrow-left, #arrow-right { 
     z-index: 25; 
     flex-shrink: 0;
 }
-#arrow-left { margin-right: 35px; } 
-#arrow-right { margin-left: 35px; }
+#arrow-left { margin-right: 20px; } 
+#arrow-right { margin-left: 20px; }
 
 .arrow-tri-right { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-left: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
 .arrow-tri-left { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-right: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
@@ -604,13 +601,6 @@ function drawSparkles() {
 }
 drawSparkles();
 
-// AUTO-SCALING ENGINE STAGES
-function getScaleClass(str) {
-    if (str.length > 25) return ' longest-name';
-    if (str.length > 16) return ' long-name';
-    return '';
-}
-
 // --- ROLL CORE ENGINE ---
 function buildReel(targetName) {
   reelEl.innerHTML = '';
@@ -619,12 +609,12 @@ function buildReel(targetName) {
   while (extended.length < 70) { extended.push(pool[Math.floor(Math.random() * pool.length)]); }
   extended.forEach(n => {
     const div = document.createElement('div');
-    div.className = 'reel-item' + getScaleClass(n);
+    div.className = 'reel-item';
     div.textContent = n;
     reelEl.appendChild(div);
   });
   const finalDiv = document.createElement('div');
-  finalDiv.className = 'reel-item' + getScaleClass(targetName);
+  finalDiv.className = 'reel-item';
   finalDiv.textContent = targetName;
   reelEl.appendChild(finalDiv);
   return { totalItems: extended.length };
@@ -685,7 +675,7 @@ function resetMachine() {
     reelEl.style.transform = 'translateY(0)';
     
     const defaultText = activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED';
-    reelEl.innerHTML = '<div class="reel-item' + getScaleClass(defaultText) + '">' + defaultText + '</div>';
+    reelEl.innerHTML = '<div class="reel-item">' + defaultText + '</div>';
     
     spinSound.pause();
     spinSound.currentTime = 0;
@@ -693,7 +683,7 @@ function resetMachine() {
 
 // Initial Core UI rendering sequence
 const initialText = activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED';
-reelEl.innerHTML = '<div class="reel-item' + getScaleClass(initialText) + '">' + initialText + '</div>';
+reelEl.innerHTML = '<div class="reel-item">' + initialText + '</div>';
 spinBtn.addEventListener('click', spin);
 resetBtn.addEventListener('click', resetMachine);
 </script>
