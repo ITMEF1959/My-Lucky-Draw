@@ -131,13 +131,16 @@ body {
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* LOCKED GLOBAL FONT SIZE - CONSTANT EVERYWHERE */
+    /* LOCKED GLOBAL FONT SIZE */
     font-size: 55px;
-    white-space: nowrap;
     
-    /* Clean text containment boundaries */
+    /* WRAP TO NEXT LINE IF TOO LONG */
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.1;
+    
+    /* Containment layout settings */
     overflow: hidden; 
-    text-overflow: clip; 
     padding: 0 10px;
 }
 
@@ -156,7 +159,7 @@ body {
     }
 }
 
-/* ARROWS (Flanking the frame edges cleanly) */
+/* ARROWS */
 #arrow-left, #arrow-right { 
     z-index: 25; 
     flex-shrink: 0;
