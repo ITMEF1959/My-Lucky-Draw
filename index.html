@@ -116,18 +116,23 @@ body {
     color: #FFFFFF !important; 
     text-align: center;
     
-    /* Give safe spacing from the absolute side arrows */
+    /* Dynamic safe boundary padding away from arrows */
     padding: 0 14%; 
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* Smart scaling font size built for multi-line */
-    font-size: clamp(22px, 3.8vw, 55px);
-    
-    /* ALLOW WRAPPING: Long emails automatically break onto a centered line below */
-    white-space: normal;
-    word-break: break-all;
-    line-height: 1.2;
+    /* Default size for normal names */
+    font-size: 60px;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+/* Utility classes applied via JS scaling engine */
+.reel-item.long-name {
+    font-size: 32px;
+}
+.reel-item.longest-name {
+    font-size: 24px;
 }
 
 .winner-glow {
@@ -141,7 +146,7 @@ body {
     }
     to {
         text-shadow: 0 0 20px #000000, 0 0 30px var(--theme-color), 0 0 40px var(--theme-color);
-        transform: scale(1.03); 
+        transform: scale(1.05); 
     }
 }
 
@@ -586,6 +591,13 @@ function drawSparkles() {
 }
 drawSparkles();
 
+// AUTO-SCALING ENGINE FUNCTION
+function getScaleClass(str) {
+    if (str.length > 25) return ' longest-name';
+    if (str.length > 15) return ' long-name';
+    return '';
+}
+
 // --- ROLL CORE ENGINE ---
 function buildReel(targetName) {
   reelEl.innerHTML = '';
@@ -594,12 +606,12 @@ function buildReel(targetName) {
   while (extended.length < 70) { extended.push(pool[Math.floor(Math.random() * pool.length)]); }
   extended.forEach(n => {
     const div = document.createElement('div');
-    div.className = 'reel-item';
+    div.className = 'reel-item' + getScaleClass(n);
     div.textContent = n;
     reelEl.appendChild(div);
   });
   const finalDiv = document.createElement('div');
-  finalDiv.className = 'reel-item';
+  finalDiv.className = 'reel-item' + getScaleClass(targetName);
   finalDiv.textContent = targetName;
   reelEl.appendChild(finalDiv);
   return { totalItems: extended.length };
@@ -658,14 +670,17 @@ function resetMachine() {
     logContent.innerHTML = '';
     winHeader.classList.remove('show');
     reelEl.style.transform = 'translateY(0)';
-    reelEl.innerHTML = '<div class="reel-item">' + (activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED') + '</div>';
+    
+    const defaultText = activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED';
+    reelEl.innerHTML = '<div class="reel-item' + getScaleClass(defaultText) + '">' + defaultText + '</div>';
     
     spinSound.pause();
     spinSound.currentTime = 0;
 }
 
 // Initial Core UI rendering sequence
-reelEl.innerHTML = '<div class="reel-item">' + (activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED') + '</div>';
+const initialText = activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED';
+reelEl.innerHTML = '<div class="reel-item' + getScaleClass(initialText) + '">' + initialText + '</div>';
 spinBtn.addEventListener('click', spin);
 resetBtn.addEventListener('click', resetMachine);
 </script>
