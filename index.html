@@ -116,20 +116,18 @@ body {
     color: #FFFFFF !important; 
     text-align: center;
     
-    /* Responsive safety boundary away from arrows */
-    padding: 0 12%; 
+    /* Give safe spacing from the absolute side arrows */
+    padding: 0 14%; 
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* AUTO-ALIGN ENGINE: 
-       Uses viewport calculations combined with a safe limit. 
-       If the name is short, it hits the maximum (60px). 
-       If it is long, it automatically scales down seamlessly to fit.
-    */
-    font-size: clamp(24px, 4.5vw, 60px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: clip;
+    /* Smart scaling font size built for multi-line */
+    font-size: clamp(22px, 3.8vw, 55px);
+    
+    /* ALLOW WRAPPING: Long emails automatically break onto a centered line below */
+    white-space: normal;
+    word-break: break-all;
+    line-height: 1.2;
 }
 
 .winner-glow {
@@ -143,7 +141,7 @@ body {
     }
     to {
         text-shadow: 0 0 20px #000000, 0 0 30px var(--theme-color), 0 0 40px var(--theme-color);
-        transform: scale(1.05); /* Slightly adjusted scale factor so long text won't pulse out into the arrows */
+        transform: scale(1.03); 
     }
 }
 
