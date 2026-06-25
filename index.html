@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futuristic Lucky Draw</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* Define CSS Variables for the Theme Engine */
+:root {
+    --theme-color: #00ff66; /* Dynamically managed by JavaScript */
+}
+
+body {
+    background-color: #0d021a;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Arial Black', sans-serif;
+    transition: background-image 0.3s ease;
+}
+
+#machine {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#sparkle-canvas { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+
+/* TOP BAR */
+#top-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10;
+}
+
+#winner-log {
+    width: 320px;
+    height: 180px;
+    background: rgba(10, 5, 20, 0.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--theme-color);
+    padding: 15px;
+    overflow-y: auto;
+    color: #fff;
+    box-shadow: 0 0 15px var(--theme-color);
+    transition: border 0.3s, box-shadow 0.3s;
+}
+#winner-log h3 { 
+    font-size: 14px; 
+    color: var(--theme-color); 
+    margin-bottom: 10px; 
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--theme-color);
+    padding-bottom: 5px;
+    transition: color 0.3s, border 0.3s;
+}
+.log-entry { 
+    font-size: 13px; 
+    margin-top: 5px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 2px solid var(--theme-color); 
+    transition: border 0.3s;
+}
+
+/* HEADER */
+#header-area { text-align: right; }
+#event-title-text { 
+    font-size: 38px; 
+    color: #FFFFFF; 
+    text-transform: uppercase;
+    text-shadow: 0 0 15px var(--theme-color);
+    transition: text-shadow 0.3s;
+}
+#lucky-draw-sub { font-size: 32px; color: #fff; display: block; letter-spacing: 4px; }
+#winner-header {
+    font-size: 45px;
+    color: var(--theme-color);
+    text-transform: uppercase;
+    text-shadow: 0 0 20px var(--theme-color);
+    opacity: 0;
+    transition: opacity 0.3s, color 0.3s, text-shadow 0.3s;
+}
+#winner-header.show { opacity: 1; }
+
+/* THE REEL */
+#reel-frame { width: 100%; position: relative; overflow: hidden; }
+#reel-window { height: 220px; overflow: hidden; position: relative; }
+
+.reel-item {
+    height: 220px;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px; 
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #FFFFFF !important; 
+    text-align: center;
+    padding: 0 300px; 
+    flex-shrink: 0;
+    text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
+}
+
+.winner-glow {
+    animation: winnerPulse 1s infinite alternate;
+}
+
+@keyframes winnerPulse {
+    from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #000000, 0 0 30px var(--theme-color);
+        transform: scale(1);
+    }
+    to {
+        text-shadow: 0 0 20px #000000, 0 0 30px var(--theme-color), 0 0 40px var(--theme-color);
+        transform: scale(1.1);
+    }
+}
+
+/* ARROWS */
+#arrow-left, #arrow-right { position: absolute; top: 50%; transform: translateY(-50%); z-index: 25; }
+#arrow-left { left: 5%; }
+#arrow-right { right: 5%; }
+.arrow-tri-right { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-left: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
+.arrow-tri-left { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-right: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
+
+/* MAIN CONTROLS */
+#controls { display: flex; gap: 20px; z-index: 40; }
+.futuristic-btn {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid;
+    color: #fff;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+#spin-btn { border-color: var(--theme-color); box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+#spin-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 30px var(--theme-color); }
+#reset-btn { border-color: #ff4444; font-size: 14px; }
+#reset-btn:hover { background: #ff4444; box-shadow: 0 0 20px #ff4444; color: #fff; }
+
+/* MINI ICON-ONLY SETUP BUTTON FIXED TO BOTTOM LEFT */
+#setup-btn { 
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--theme-color); 
+    color: var(--theme-color);
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    font-size: 20px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+    z-index: 50;
+    transition: all 0.3s;
+}
+#setup-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 25px var(--theme-color); transform: rotate(45deg); }
+
+button:disabled { opacity: 0.2; cursor: default; }
+.blinking { animation: blink 0.3s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* SETUP MODAL */
+#setup-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+.modal-content {
+    background: rgba(15, 5, 25, 0.95);
+    border: 2px solid var(--theme-color);
+    box-shadow: 0 0 30px var(--theme-color);
+    padding: 30px;
+    width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.modal-content h2 { font-size: 20px; color: var(--theme-color); letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 11px; color: #aaa; letter-spacing: 1px; font-weight: bold; }
+
+.form-group input[type="text"], #input-hex {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 10px;
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 14px;
+}
+.form-group input[type="text"]:focus, #input-hex:focus {
+    border-color: var(--theme-color);
+    outline: none;
+}
+.form-group input[type="file"] { color: #fff; font-size: 12px; }
+
+/* THEME COLOR COMPONENT STYLES */
+.color-picker-wrapper { display: flex; align-items: center; gap: 12px; }
+.color-picker-wrapper input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    background: transparent;
+}
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 4px; }
+#input-hex {
+    width: 110px;
+    font-family: monospace;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+/* HELPER NOTATION TEXT */
+.setup-note {
+    font-size: 11px;
+    color: #ffaa00;
+    line-height: 1.4;
+    padding-left: 2px;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+
+#clear-pool-btn {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px dashed #ff4444;
+    color: #ff4444;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+#clear-pool-btn:hover { background: #ff4444; color: #fff; }
+
+.modal-btn {
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid;
+    text-transform: uppercase;
+}
+#save-setup { border-color: var(--theme-color); color: var(--theme-color); }
+#save-setup:hover { background: var(--theme-color); color: #000; }
+#close-setup { border-color: #ff4444; color: #ff4444; }
+#close-setup:hover { background: #ff4444; color: #fff; }
+#pool-counter { font-size: 12px; color: var(--theme-color); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div id="machine">
+  <canvas id="sparkle-canvas"></canvas>
+  
+  <div id="top-bar">
+    <div id="winner-log">
+        <h3>WINNER ARCHIVE</h3>
+        <div id="log-content"></div>
+    </div>
+    <div id="header-area">
+      <div id="event-title-text">LUCKY DRAW SYSTEM</div>
+      <span id="lucky-draw-sub">LUCKY DRAW</span>
+      <div id="winner-header">WINNER</div>
+    </div>
+  </div>
+
+  <div id="reel-frame">
+    <div id="reel-window"><div id="reel"></div></div>
+    <div id="arrow-left"><div class="arrow-tri-right"></div></div>
+    <div id="arrow-right"><div class="arrow-tri-left"></div></div>
+  </div>
+
+  <div id="controls">
+    <button id="reset-btn" class="futuristic-btn">SYSTEM RESET</button>
+    <button id="spin-btn" class="futuristic-btn">SPIN</button>
+  </div>
+</div>
+
+<button id="setup-btn" title="System Setup">⚙️</button>
+
+<div id="setup-modal">
+  <div class="modal-content">
+    <h2>SYSTEM SETUP</h2>
+    
+    <div class="form-group">
+      <label>EVENT TITLE</label>
+      <input type="text" id="input-title" value="LUCKY DRAW SYSTEM">
+    </div>
+
+    <div class="form-group">
+      <label>THEME ACCENT COLOR</label>
+      <div class="color-picker-wrapper">
+         <input type="color" id="input-color" value="#00ff66">
+         <input type="text" id="input-hex" value="#00FF66" maxlength="7">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>CUSTOM BACKGROUND IMAGE</label>
+      <input type="file" id="input-bg" accept="image/*">
+      <div class="setup-note">⚠️ Ideal resolution: 1920×1080 (16:9 widescreen). Keep file size under 2MB so browser LocalStorage can save it across restarts permanently.</div>
+    </div>
+
+    <div class="form-group">
+      <label>UPLOAD NAMES (CSV / TXT)</label>
+      <input type="file" id="input-csv" accept=".csv,.txt">
+      <div id="pool-counter">Active pool: 0 names loaded.</div>
+    </div>
+
+    <button id="clear-pool-btn">🗑️ Clear All Names From List</button>
+
+    <div class="modal-actions">
+      <button id="close-setup" class="modal-btn">Cancel</button>
+      <button id="save-setup" class="modal-btn">Apply changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const reelEl = document.getElementById('reel');
+const spinBtn = document.getElementById('spin-btn');
+const resetBtn = document.getElementById('reset-btn');
+const winHeader = document.getElementById('winner-header');
+const logContent = document.getElementById('log-content');
+const arrows = [document.getElementById('arrow-left'), document.getElementById('arrow-right')];
+
+// SETUP DOM ELEMENTS
+const setupBtn = document.getElementById('setup-btn');
+const setupModal = document.getElementById('setup-modal');
+const closeSetup = document.getElementById('close-setup');
+const saveSetup = document.getElementById('save-setup');
+const inputTitle = document.getElementById('input-title');
+const inputColor = document.getElementById('input-color');
+const inputHex = document.getElementById('input-hex');
+const inputBg = document.getElementById('input-bg');
+const inputCsv = document.getElementById('input-csv');
+const poolCounter = document.getElementById('pool-counter');
+const eventTitleText = document.getElementById('event-title-text');
+const clearPoolBtn = document.getElementById('clear-pool-btn');
+
+// --- AUDIO CONFIG ---
+const spinSound = new Audio('Machine.mp3');
+
+// STATE CONTROLLERS
+let names = JSON.parse(localStorage.getItem('luckyDrawNames')) || [];
+let activePool = [...names];
+let spinning = false;
+let temporaryNames = null;
+let currentThemeColor = '#00ff66';
+let temporaryBgBase64 = null;
+
+// --- INIT THEME BINDER ENGINE ---
+function applyThemeColor(color) {
+    currentThemeColor = color;
+    document.documentElement.style.setProperty('--theme-color', color);
+    inputHex.value = color.toUpperCase();
+    inputColor.value = color;
+}
+
+// Load configurations from LocalStorage
+const savedTitle = localStorage.getItem('luckyDrawTitle');
+if (savedTitle) {
+    eventTitleText.textContent = savedTitle;
+    inputTitle.value = savedTitle;
+}
+
+const savedColor = localStorage.getItem('luckyDrawColor');
+if (savedColor) {
+    applyThemeColor(savedColor);
+} else {
+    applyThemeColor('#00ff66');
+}
+
+const savedBg = localStorage.getItem('luckyDrawBg');
+if (savedBg) {
+    document.body.style.backgroundImage = `url('${savedBg}')`;
+} else {
+    document.body.style.backgroundImage = "url('background.jpeg')";
+}
+
+// --- CONTROLS ACTION HANDLERS ---
+setupBtn.addEventListener('click', () => {
+    if (spinning) return;
+    poolCounter.textContent = `Active pool: ${activePool.length} names loaded.`;
+    setupModal.style.display = 'flex';
+});
+
+closeSetup.addEventListener('click', () => {
+    setupModal.style.display = 'none';
+    temporaryNames = null;
+    temporaryBgBase64 = null;
+    inputCsv.value = '';
+    inputBg.value = '';
+    applyThemeColor(currentThemeColor);
+});
+
+// Color Picker Sync -> Type-In Input
+inputColor.addEventListener('input', (e) => {
+    inputHex.value = e.target.value.toUpperCase();
+});
+
+// Type-In Input -> Color Picker Sync
+inputHex.addEventListener('input', (e) => {
+    let val = e.target.value;
+    if (!val.startsWith('#')) {
+        val = '#' + val;
+    }
+    // Simple validation test for standard hex format 3/6 digits
+    const isValidHex = /^#[0-9A-F]{6}$/i.test(val);
+    if (isValidHex) {
+        inputColor.value = val;
+    }
+});
+
+// BACKGROUND PROCESSOR
+inputBg.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        temporaryBgBase64 = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+// DATA WIPE DETONATOR
+clearPoolBtn.addEventListener('click', () => {
+    if(confirm("Are you sure you want to delete all names forever? This completely clears browser memory.")) {
+        temporaryNames = [];
+        names = [];
+        localStorage.removeItem('luckyDrawNames');
+        poolCounter.textContent = "Database cleared! Click 'Apply changes' to finalize.";
+    }
+});
+
+// COMPRESSED TEXT PARSER
+inputCsv.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const text = evt.target.result;
+        const parsed = text.split(/[\n\r,]+/)
+                           .map(n => n.trim())
+                           .filter(n => n.length > 0);
+        
+        if (parsed.length > 0) {
+            temporaryNames = parsed;
+            poolCounter.textContent = `Detected: ${parsed.length} names ready to save.`;
+        } else {
+            alert("No valid names found in file.");
+        }
+    };
+    reader.readAsText(file);
+});
+
+// GLOBAL CONFIG WRITER
+saveSetup.addEventListener('click', () => {
+    const cleanTitle = inputTitle.value.trim().toUpperCase();
+    if (cleanTitle !== "") {
+        eventTitleText.textContent = cleanTitle;
+        localStorage.setItem('luckyDrawTitle', cleanTitle);
+    }
+    
+    // Process Hex validation before closing
+    let finalColor = inputHex.value.trim();
+    if (!finalColor.startsWith('#')) finalColor = '#' + finalColor;
+    if (/^#[0-9A-F]{6}$/i.test(finalColor)) {
+        applyThemeColor(finalColor);
+        localStorage.setItem('luckyDrawColor', finalColor);
+    } else {
+        alert("Invalid Hex theme color provided. Reverting to default palette color.");
+        applyThemeColor(currentThemeColor);
+    }
+
+    if (temporaryBgBase64) {
+        document.body.style.backgroundImage = `url('${temporaryBgBase64}')`;
+        try {
+            localStorage.setItem('luckyDrawBg', temporaryBgBase64);
+        } catch(e) {
+            alert("Background image file is too heavy for LocalStorage cross-refresh protection. It works now but will reset when refreshed.");
+        }
+    }
+
+    if (temporaryNames !== null) {
+        names = [...temporaryNames];
+        if (names.length === 0) {
+            localStorage.removeItem('luckyDrawNames');
+        } else {
+            localStorage.setItem('luckyDrawNames', JSON.stringify(names));
+        }
+        resetMachine();
+    }
+    
+    setupModal.style.display = 'none';
+    temporaryNames = null;
+    temporaryBgBase64 = null;
+    inputCsv.value = '';
+    inputBg.value = '';
+});
+
+// --- ENGINE PARTICLES GENERATOR ---
+const spCanvas = document.getElementById('sparkle-canvas');
+const spCtx = spCanvas.getContext('2d');
+function resizeSp() { spCanvas.width = window.innerWidth; spCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeSp); resizeSp();
+let sparkles = [];
+
+function spawnWinSparkle(cx, cy, color) {
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 3 + Math.random() * 9;
+    sparkles.push({ 
+        x: cx, 
+        y: cy, 
+        vx: Math.cos(a) * spd, 
+        vy: Math.sin(a) * spd - 2, 
+        life: 1, 
+        size: Math.random() * 5 + 1, 
+        color: color 
+    });
+  }
+}
+function drawSparkles() {
+  spCtx.clearRect(0, 0, spCanvas.width, spCanvas.height);
+  sparkles.forEach((s, i) => {
+    s.x += s.vx; s.y += s.vy; s.vy += 0.12; s.life -= 0.01;
+    if (s.life <= 0) { sparkles.splice(i, 1); return; }
+    spCtx.globalAlpha = s.life; spCtx.fillStyle = s.color;
+    spCtx.beginPath(); spCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2); spCtx.fill();
+  });
+  requestAnimationFrame(drawSparkles);
+}
+drawSparkles();
+
+// --- ROLL CORE ENGINE ---
+function buildReel(targetName) {
+  reelEl.innerHTML = '';
+  const pool = activePool.length > 0 ? activePool : ["No Names Loaded"];
+  const extended = [];
+  while (extended.length < 70) { extended.push(pool[Math.floor(Math.random() * pool.length)]); }
+  extended.forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'reel-item';
+    div.textContent = n;
+    reelEl.appendChild(div);
+  });
+  const finalDiv = document.createElement('div');
+  finalDiv.className = 'reel-item';
+  finalDiv.textContent = targetName;
+  reelEl.appendChild(finalDiv);
+  return { totalItems: extended.length };
+}
+
+function spin() {
+  if (spinning || activePool.length === 0) return;
+  spinning = true;
+  spinBtn.disabled = true;
+  resetBtn.disabled = true;
+  setupBtn.disabled = true; 
+  winHeader.classList.remove('show');
+  arrows.forEach(a => a.classList.add('blinking'));
+
+  spinSound.currentTime = 0;
+  spinSound.play().catch(e => console.log("Audio skipped or blocked"));
+
+  const winnerIndex = Math.floor(Math.random() * activePool.length);
+  const target = activePool[winnerIndex];
+  
+  const { totalItems } = buildReel(target);
+  const totalScroll = totalItems * 220;
+  const start = performance.now();
+
+  function anim(now) {
+    const t = Math.min((now - start) / 6500, 1);
+    const ease = 1 - Math.pow(1 - t, 4); 
+    reelEl.style.transform = `translateY(-${ease * totalScroll}px)`;
+    if (t < 1) requestAnimationFrame(anim);
+    else onWin(target, winnerIndex);
+  }
+  requestAnimationFrame(anim);
+}
+
+function onWin(name, index) {
+  spinning = false;
+  spinBtn.disabled = false;
+  resetBtn.disabled = false;
+  setupBtn.disabled = false;
+  winHeader.classList.add('show');
+  arrows.forEach(a => a.classList.remove('blinking'));
+
+  reelEl.lastElementChild.classList.add('winner-glow');
+
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.textContent = name;
+  logContent.prepend(entry);
+
+  activePool.splice(index, 1);
+  spawnWinSparkle(window.innerWidth/2, window.innerHeight/2, currentThemeColor);
+}
+
+function resetMachine() {
+    activePool = [...names];
+    logContent.innerHTML = '';
+    winHeader.classList.remove('show');
+    reelEl.style.transform = 'translateY(0)';
+    reelEl.innerHTML = '<div class="reel-item">' + (activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED') + '</div>';
+    
+    spinSound.pause();
+    spinSound.currentTime = 0;
+}
+
+// Initial Core UI rendering sequence
+reelEl.innerHTML = '<div class="reel-item">' + (activePool.length > 0 ? 'SYSTEM READY' : 'NO NAMES LOADED') + '</div>';
+spinBtn.addEventListener('click', spin);
+resetBtn.addEventListener('click', resetMachine);
+</script>
+</body>
+</html>
