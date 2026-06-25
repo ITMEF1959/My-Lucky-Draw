@@ -113,13 +113,13 @@ body {
 #reel-window { 
     flex: 1; 
     max-width: 1200px;
-    height: 220px; 
+    height: 260px; /* Expanded window space for dual lines */
     overflow: hidden; 
     position: relative; 
 }
 
 .reel-item {
-    height: 220px;
+    height: 260px;
     width: 100%; 
     display: flex;
     align-items: center;
@@ -131,17 +131,14 @@ body {
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* LOCKED GLOBAL FONT SIZE */
+    /* UNIFORM STATIC FONT SIZE */
     font-size: 55px;
     
-    /* WRAP TO NEXT LINE IF TOO LONG */
+    /* ALLOW WRAPPING AND CONTINUATION BELOW */
     white-space: normal;
-    word-break: break-word;
+    word-break: break-all;
     line-height: 1.1;
-    
-    /* Containment layout settings */
-    overflow: hidden; 
-    padding: 0 10px;
+    padding: 0 15px;
 }
 
 .winner-glow {
@@ -155,7 +152,7 @@ body {
     }
     to {
         text-shadow: 0 0 20px #000000, 0 0 30px var(--theme-color), 0 0 40px var(--theme-color);
-        transform: scale(1.03); 
+        transform: scale(1.02); 
     }
 }
 
@@ -164,8 +161,8 @@ body {
     z-index: 25; 
     flex-shrink: 0;
 }
-#arrow-left { margin-right: 20px; } 
-#arrow-right { margin-left: 20px; }
+#arrow-left { margin-right: 25px; } 
+#arrow-right { margin-left: 25px; }
 
 .arrow-tri-right { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-left: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
 .arrow-tri-left { width: 0; height: 0; border-top: 40px solid transparent; border-bottom: 40px solid transparent; border-right: 50px solid #fff; filter: drop-shadow(0 0 10px var(--theme-color)); }
@@ -637,7 +634,7 @@ function spin() {
   const target = activePool[winnerIndex];
   
   const { totalItems } = buildReel(target);
-  const totalScroll = totalItems * 220;
+  const totalScroll = totalItems * 260; // Linked to updated 260px container step sizing
   const start = performance.now();
 
   function anim(now) {
