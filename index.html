@@ -101,7 +101,7 @@ body {
 }
 #winner-header.show { opacity: 1; }
 
-/* THE REEL SYSTEM (Cleanly sandwiched, no overlapping) */
+/* THE REEL SYSTEM */
 #reel-frame { 
     width: 100%; 
     display: flex; 
@@ -131,11 +131,11 @@ body {
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
     
-    /* MAINTAINED BIG FONT SIZE: Standardized globally across all variations */
+    /* LOCKED GLOBAL FONT SIZE - CONSTANT EVERYWHERE */
     font-size: 55px;
     white-space: nowrap;
     
-    /* Prevents spilling past the boundaries */
+    /* Clean text containment boundaries */
     overflow: hidden; 
     text-overflow: clip; 
     padding: 0 10px;
@@ -156,7 +156,7 @@ body {
     }
 }
 
-/* ARROWS (Natively flanking the margins perfectly) */
+/* ARROWS (Flanking the frame edges cleanly) */
 #arrow-left, #arrow-right { 
     z-index: 25; 
     flex-shrink: 0;
@@ -471,7 +471,6 @@ inputHex.addEventListener('input', (e) => {
     if (!val.startsWith('#')) {
         val = '#' + val;
     }
-    // Simple validation test for standard hex format 3/6 digits
     const isValidHex = /^#[0-9A-F]{6}$/i.test(val);
     if (isValidHex) {
         inputColor.value = val;
@@ -530,7 +529,6 @@ saveSetup.addEventListener('click', () => {
         localStorage.setItem('luckyDrawTitle', cleanTitle);
     }
     
-    // Process Hex validation before closing
     let finalColor = inputHex.value.trim();
     if (!finalColor.startsWith('#')) finalColor = '#' + finalColor;
     if (/^#[0-9A-F]{6}$/i.test(finalColor)) {
