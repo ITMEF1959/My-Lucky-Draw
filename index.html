@@ -116,9 +116,16 @@ body {
     text-transform: uppercase;
     color: #FFFFFF !important; 
     text-align: center;
-    padding: 0 300px; 
+    
+    /* Responsive safety padding keeps text completely clear of the 5% side arrows */
+    padding: 0 12vw; 
     flex-shrink: 0;
     text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 10px rgba(255,255,255,0.5);
+    
+    /* Clean formatting boundaries for ultra-long entries */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .winner-glow {
